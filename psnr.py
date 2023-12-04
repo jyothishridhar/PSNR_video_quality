@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 import tempfile
 import os
-import matplotlib.pyplot as plt
 
 def download_video(url):
     response = st.sidebar.file_uploader("Upload a video file", type=["mp4"])
@@ -84,7 +83,7 @@ if distorted_video_content is not None:
     # Create a list of frame numbers for x-axis
     frame_numbers = list(range(1, len(psnr_values) + 1))
 
-    # Plot the PSNR values in a line graph
+    # Plot the PSNR values in a line chart using Streamlit
     st.line_chart(pd.DataFrame({"Frame Number": frame_numbers, "PSNR Value": psnr_values}).set_index("Frame Number"))
 
     # Display the result on the app
