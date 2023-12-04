@@ -4,8 +4,6 @@ import numpy as np
 import pandas as pd
 import tempfile
 import os
-import matplotlib
-matplotlib.use("Agg")  # Use the Agg backend which doesn't require a display
 import matplotlib.pyplot as plt
 
 
