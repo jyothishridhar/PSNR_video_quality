@@ -9,6 +9,7 @@ matplotlib.use("Agg")  # Use the Agg backend which doesn't require a display
 import matplotlib.pyplot as plt
 
 
+
 def download_video(url):
     response = st.sidebar.file_uploader("Upload a video file", type=["mp4"])
     if response:
