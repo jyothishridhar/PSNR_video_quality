@@ -4,16 +4,7 @@ import numpy as np
 import pandas as pd
 import tempfile
 import os
-# import matplotlib.pyplot as plt
-import matplotlib
-try:
-    matplotlib.use("TkAgg")
-    import matplotlib.pyplot as plt
-except ImportError:
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
-
-
+import matplotlib.pyplot as plt
 
 def download_video(url):
     response = st.sidebar.file_uploader("Upload a video file", type=["mp4"])
