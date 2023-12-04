@@ -1,19 +1,12 @@
 import cv2
 import streamlit as st
 import numpy as np
-# import matplotlib
-# matplotlib.use("Agg")  # Use the Agg backend which doesn't require a display
-# import matplotlib.pyplot as plt
 import pandas as pd
 import tempfile
 import os
 import matplotlib
-try:
-    matplotlib.use("TkAgg")  # Try using TkAgg backend
-    import matplotlib.pyplot as plt
-except ImportError:
-    matplotlib.use("Agg")  # Use Agg if TkAgg is not available
-    import matplotlib.pyplot as plt
+matplotlib.use("Agg")  # Use the Agg backend which doesn't require a display
+import matplotlib.pyplot as plt
 
 
 def download_video(url):
