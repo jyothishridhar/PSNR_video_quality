@@ -4,7 +4,14 @@ import numpy as np
 import pandas as pd
 import tempfile
 import os
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
+import matplotlib
+try:
+    matplotlib.use("TkAgg")
+    import matplotlib.pyplot as plt
+except ImportError:
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
 
 
 
