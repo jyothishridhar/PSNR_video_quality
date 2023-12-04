@@ -73,6 +73,13 @@ good_video_url = "https://github.com/jyothishridhar/PSNR_video_quality/raw/main/
 distorted_video_path = download_video(distorted_video_url, 'distorted.mp4')
 good_video_path = download_video(good_video_url, 'reference.mp4')
 
+# Add download links
+st.markdown(f"**Download Distorted Video**")
+st.markdown(f"[Click here to download the Distorted Video]({distorted_video_url})")
+
+st.markdown(f"**Download Reference Video**")
+st.markdown(f"[Click here to download the Reference Video]({good_video_url})")
+
 # Calculate PSNR values for each frame in the distorted video
 psnr_values, distorted_frame_numbers, frame_timestamps = calculate_psnr_for_each_frame(distorted_video_path, good_video_path)
 
@@ -98,7 +105,3 @@ st.dataframe(df)
 # Save PSNR values, frame numbers, and timestamps to an Excel file
 excel_buffer = df.to_excel(index=False)
 st.markdown(get_excel_link(excel_buffer, "Download PSNR Report"), unsafe_allow_html=True)
-
-# Create download links for the videos
-st.markdown(f"Download [Reference Video](data:video/mp4;base64,{base64.b64encode(open(good_video_path, 'rb').read()).decode()})", unsafe_allow_html=True)
-st.markdown(f"Download [Distorted Video](data:video/mp4;base64,{base64.b64encode(open(distorted_video_path, 'rb').read()).decode()})", unsafe_allow_html=True)
