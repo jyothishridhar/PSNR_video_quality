@@ -2,10 +2,8 @@ import cv2
 import streamlit as st
 import numpy as np
 import pandas as pd
-import tempfile
-import os
 import requests
-from io import BytesIO
+import base64
 
 def download_video(url, file_name):
     response = requests.get(url)
@@ -67,7 +65,7 @@ def calculate_psnr_for_each_frame(distorted_video_path, good_video_path):
 # Streamlit app code
 st.title("PSNR Calculation Demo")
 
-# Git LFS URLs for the distorted and reference videos
+# URLs for the distorted and reference videos
 distorted_video_url = "https://github.com/jyothishridhar/PSNR_video_quality/raw/main/distorted.avi"
 good_video_url = "https://github.com/jyothishridhar/PSNR_video_quality/raw/main/referance.mp4"
 
@@ -102,11 +100,5 @@ excel_buffer = df.to_excel(index=False)
 st.markdown(get_excel_link(excel_buffer, "Download PSNR Report"), unsafe_allow_html=True)
 
 # Create download links for the videos
-st.markdown(
-    f"Download [Reference Video](data:video/mp4;base64,{base64.b64encode(open(good_video_path, 'rb').read()).decode()})",
-    unsafe_allow_html=True
-)
-st.markdown(
-    f"Download [Distorted Video](data:video/mp4;base64,{base64.b64encode(open(distorted_video_path, 'rb').read()).decode()})",
-    unsafe_allow_html=True
-)
+st.markdown(f"Download [Reference Video](data:video/mp4;base64,{base64.b64encode(open(good_video_path, 'rb').read()).decode()})", unsafe_allow_html=True)
+st.markdown(f"Download [Distorted Video](data:video/mp4;base64,{base64.b64encode(open(distorted_video_path, 'rb').read()).decode()})", unsafe_allow_html=True)
