@@ -4,11 +4,15 @@ import numpy as np
 import pandas as pd
 import tempfile
 import os
+import requests
+from io import BytesIO
 
-def download_video(url):
-    response = st.sidebar.file_uploader("Upload a video file", type=["mp4"])
-    if response:
-        return response
+def download_video(url, file_name):
+    response = requests.get(url)
+    if response.status_code == 200:
+        with open(file_name, 'wb') as f:
+            f.write(response.content)
+        return file_name
 
 def calculate_psnr(frame1, frame2):
     mse = np.mean((frame1 - frame2) ** 2)
@@ -18,12 +22,7 @@ def calculate_psnr(frame1, frame2):
     psnr = 10 * np.log10((max_pixel ** 2) / mse)
     return psnr
 
-def calculate_psnr_for_each_frame(distorted_video_content, good_video_path):
-    # Save distorted video content to a temporary file
-    with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as temp_file:
-        temp_file.write(distorted_video_content.getvalue())
-        distorted_video_path = temp_file.name
-
+def calculate_psnr_for_each_frame(distorted_video_path, good_video_path):
     # Open the videos
     distorted_video = cv2.VideoCapture(distorted_video_path)
     good_video = cv2.VideoCapture(good_video_path)
@@ -63,42 +62,41 @@ def calculate_psnr_for_each_frame(distorted_video_content, good_video_path):
     distorted_video.release()
     good_video.release()
 
-    # Clean up the temporary file
-    os.remove(distorted_video_path)
-
     return psnr_values, distorted_frame_numbers, frame_timestamps
 
 # Streamlit app code
 st.title("PSNR Calculation Demo")
 
-# Upload distorted video
-distorted_video_content = download_video("Upload Distorted Video")
-if distorted_video_content is not None:
-    # Git LFS URL for the reference video
-    good_video_path = "https://github.com/jyothishridhar/PSNR_video_quality/raw/main/referance.mp4"
+# Git LFS URLs for the distorted and reference videos
+distorted_video_url = "https://github.com/jyothishridhar/PSNR_video_quality/raw/main/distorted.avi"
+good_video_url = "https://github.com/jyothishridhar/PSNR_video_quality/raw/main/referance.mp4"
 
-    # Calculate PSNR values for each frame in the distorted video
-    psnr_values, distorted_frame_numbers, frame_timestamps = calculate_psnr_for_each_frame(distorted_video_content, good_video_path)
+# Download videos
+distorted_video_path = download_video(distorted_video_url, 'distorted.mp4')
+good_video_path = download_video(good_video_url, 'reference.mp4')
 
-    # Create a list of frame numbers for x-axis
-    frame_numbers = list(range(1, len(psnr_values) + 1))
+# Calculate PSNR values for each frame in the distorted video
+psnr_values, distorted_frame_numbers, frame_timestamps = calculate_psnr_for_each_frame(distorted_video_path, good_video_path)
 
-    # Plot the PSNR values in a line chart using Streamlit
-    st.line_chart(pd.DataFrame({"Frame Number": frame_numbers, "PSNR Value": psnr_values}).set_index("Frame Number"))
+# Create a list of frame numbers for x-axis
+frame_numbers = list(range(1, len(psnr_values) + 1))
 
-    # Display the result on the app
-    st.success("PSNR calculation completed!")
+# Plot the PSNR values in a line chart using Streamlit
+st.line_chart(pd.DataFrame({"Frame Number": frame_numbers, "PSNR Value": psnr_values}).set_index("Frame Number"))
 
-    # Display the PSNR values and frame timestamps
-    data = {
-        'Frame Number': frame_numbers,
-        'PSNR Value': psnr_values,
-        'Timestamp (ms)': frame_timestamps
-    }
+# Display the result on the app
+st.success("PSNR calculation completed!")
 
-    df = pd.DataFrame(data)
-    st.dataframe(df)
+# Display the PSNR values and frame timestamps
+data = {
+    'Frame Number': frame_numbers,
+    'PSNR Value': psnr_values,
+    'Timestamp (ms)': frame_timestamps
+}
 
-    # Save PSNR values, frame numbers, and timestamps to an Excel file
-    excel_buffer = df.to_excel(index=False)
-    st.markdown(get_excel_link(excel_buffer, "Download PSNR Report"), unsafe_allow_html=True)
+df = pd.DataFrame(data)
+st.dataframe(df)
+
+# Save PSNR values, frame numbers, and timestamps to an Excel file
+excel_buffer = df.to_excel(index=False)
+st.markdown(get_excel_link(excel_buffer, "Download PSNR Report"), unsafe_allow_html=True)
