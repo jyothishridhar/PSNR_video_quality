@@ -69,16 +69,19 @@ st.title("PSNR Calculation Demo")
 distorted_video_url = "https://github.com/jyothishridhar/PSNR_video_quality/raw/main/distorted.avi"
 good_video_url = "https://github.com/jyothishridhar/PSNR_video_quality/raw/main/referance.mp4"
 
-# Placeholder for video paths
-distorted_video_path = None
-good_video_path = None
+# Download videos
+distorted_video_path = download_video(distorted_video_url, 'distorted.mp4')
+good_video_path = download_video(good_video_url, 'reference.mp4')
 
-# Button to trigger PSNR calculation
-if st.button("Run PSNR Calculation To Check Video Quality"):
-    # Download videos
-    distorted_video_path = download_video(distorted_video_url, 'distorted.mp4')
-    good_video_path = download_video(good_video_url, 'reference.mp4')
+# Add download links
+st.markdown(f"**Download Distorted Video**")
+st.markdown(f"[Click here to download the Distorted Video]({distorted_video_url})")
 
+st.markdown(f"**Download Reference Video**")
+st.markdown(f"[Click here to download the Reference Video]({good_video_url})")
+
+# Add button to run PSNR calculation
+if st.button("Run PSNR Calculation"):
     # Calculate PSNR values for each frame in the distorted video
     psnr_values, distorted_frame_numbers, frame_timestamps = calculate_psnr_for_each_frame(distorted_video_path, good_video_path)
 
@@ -104,10 +107,3 @@ if st.button("Run PSNR Calculation To Check Video Quality"):
     # Save PSNR values, frame numbers, and timestamps to an Excel file
     excel_buffer = df.to_excel(index=False)
     st.markdown(get_excel_link(excel_buffer, "Download PSNR Report"), unsafe_allow_html=True)
-
-    # Add download links for the videos
-    st.markdown(f"**Download Distorted Video**")
-    st.markdown(f"[Click here to download the Distorted Video]({distorted_video_url})")
-
-    st.markdown(f"**Download Reference Video**")
-    st.markdown(f"[Click here to download the Reference Video]({good_video_url})")
