@@ -1,6 +1,8 @@
 import cv2
 import streamlit as st
 import numpy as np
+import matplotlib
+matplotlib.use("Agg")  # Use the Agg backend which doesn't require a display
 import matplotlib.pyplot as plt
 import pandas as pd
 import tempfile
