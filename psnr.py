@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import requests
 import base64
+import io  # Add this import
 
 def download_video(url, file_name):
     response = requests.get(url)
@@ -61,6 +62,11 @@ def calculate_psnr_for_each_frame(distorted_video_path, good_video_path):
     good_video.release()
 
     return psnr_values, distorted_frame_numbers, frame_timestamps
+
+# Define get_excel_link function
+def get_excel_link(data, title):
+    b64 = base64.b64encode(data.read()).decode()  # Changed to data.read()
+    return f'<a href="data:application/octet-stream;base64,{b64}" download="{title}.xlsx">Download {title}</a>'
 
 # Streamlit app code
 st.title("PSNR Calculation Demo")
