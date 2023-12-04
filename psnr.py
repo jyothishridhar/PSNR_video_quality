@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import requests
 import base64
-import io  # Add this import
+from io import BytesIO
 
 def download_video(url, file_name):
     response = requests.get(url)
@@ -64,8 +64,10 @@ def calculate_psnr_for_each_frame(distorted_video_path, good_video_path):
     return psnr_values, distorted_frame_numbers, frame_timestamps
 
 # Define get_excel_link function
-def get_excel_link(data, title):
-    b64 = base64.b64encode(data.read()).decode()  # Changed to data.read()
+def get_excel_link(df, title):
+    excel_buffer = BytesIO()
+    df.to_excel(excel_buffer, index=False)
+    b64 = base64.b64encode(excel_buffer.getvalue()).decode()
     return f'<a href="data:application/octet-stream;base64,{b64}" download="{title}.xlsx">Download {title}</a>'
 
 # Streamlit app code
@@ -111,5 +113,4 @@ if st.button("Run PSNR Calculation"):
     st.dataframe(df)
 
     # Save PSNR values, frame numbers, and timestamps to an Excel file
-    excel_buffer = df.to_excel(index=False)
-    st.markdown(get_excel_link(excel_buffer, "Download PSNR Report"), unsafe_allow_html=True)
+    st.markdown(get_excel_link(df, "Download PSNR Report"), unsafe_allow_html=True)
