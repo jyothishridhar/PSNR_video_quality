@@ -1,9 +1,16 @@
 import cv2
+import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+import tempfile
+import os
 
-# Rest of the code is the same
+def download_video(url):
+    response = st.sidebar.file_uploader("Upload a video file", type=["mp4"])
+    if response:
+        return response
+
 def calculate_psnr(frame1, frame2):
     mse = np.mean((frame1 - frame2) ** 2)
     if mse == 0:
@@ -12,7 +19,12 @@ def calculate_psnr(frame1, frame2):
     psnr = 10 * np.log10((max_pixel ** 2) / mse)
     return psnr
 
-def calculate_psnr_for_each_frame(distorted_video_path, good_video_path):
+def calculate_psnr_for_each_frame(distorted_video_content, good_video_path):
+    # Save distorted video content to a temporary file
+    with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as temp_file:
+        temp_file.write(distorted_video_content.getvalue())
+        distorted_video_path = temp_file.name
+
     # Open the videos
     distorted_video = cv2.VideoCapture(distorted_video_path)
     good_video = cv2.VideoCapture(good_video_path)
@@ -52,38 +64,42 @@ def calculate_psnr_for_each_frame(distorted_video_path, good_video_path):
     distorted_video.release()
     good_video.release()
 
+    # Clean up the temporary file
+    os.remove(distorted_video_path)
+
     return psnr_values, distorted_frame_numbers, frame_timestamps
 
-# Rest of the code remains the same
+# Streamlit app code
+st.title("PSNR Calculation Demo")
 
-# Example usage
-distorted_video_path = r"C:/OTT_PROJECT/SSIM and PSNR/output_video_distorted_middle.avi"
-good_video_path = r"C:/OTT_PROJECT/SSIM and PSNR/oxford_referance.mp4"
+# Upload distorted video
+distorted_video_content = download_video("Upload Distorted Video")
+if distorted_video_content is not None:
+    # Git LFS URL for the reference video
+    good_video_path = "https://github.com/jyothishridhar/PSNR_video_quality/raw/main/referance.mp4"
 
-# Calculate PSNR values for each frame in the distorted video
-psnr_values, distorted_frame_numbers, frame_timestamps = calculate_psnr_for_each_frame(distorted_video_path, good_video_path)
+    # Calculate PSNR values for each frame in the distorted video
+    psnr_values, distorted_frame_numbers, frame_timestamps = calculate_psnr_for_each_frame(distorted_video_content, good_video_path)
 
-# Create a list of frame numbers for x-axis
-frame_numbers = list(range(1, len(psnr_values) + 1))
+    # Create a list of frame numbers for x-axis
+    frame_numbers = list(range(1, len(psnr_values) + 1))
 
-# Plot the PSNR values in a line graph
-plt.plot(frame_numbers, psnr_values, marker='o', linestyle='-')
-plt.xlabel('Frame Number')
-plt.ylabel('PSNR Value')
-plt.title('PSNR Values for Distorted Video')
-plt.grid(True)
-plt.show()
+    # Plot the PSNR values in a line graph
+    st.line_chart(pd.DataFrame({"Frame Number": frame_numbers, "PSNR Value": psnr_values}).set_index("Frame Number"))
 
-# Print PSNR values and frame timestamps for each frame
-data = {
-    'Frame Number': frame_numbers,
-    'PSNR Value': psnr_values,
-    'Timestamp (ms)': frame_timestamps
-}
+    # Display the result on the app
+    st.success("PSNR calculation completed!")
 
-df = pd.DataFrame(data)
-print(df)
+    # Display the PSNR values and frame timestamps
+    data = {
+        'Frame Number': frame_numbers,
+        'PSNR Value': psnr_values,
+        'Timestamp (ms)': frame_timestamps
+    }
 
-# Save PSNR values, frame numbers, and timestamps to an Excel file
-output_excel_path = r"C:\OTT_PROJECT\SSIM and PSNR\PSNR\psnr_values_and_timestamps.xlsx"
-df.to_excel(output_excel_path, index=False)
+    df = pd.DataFrame(data)
+    st.dataframe(df)
+
+    # Save PSNR values, frame numbers, and timestamps to an Excel file
+    excel_buffer = df.to_excel(index=False)
+    st.markdown(get_excel_link(excel_buffer, "Download PSNR Report"), unsafe_allow_html=True)
