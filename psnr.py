@@ -101,9 +101,13 @@ if st.button("Run PSNR Calculation"):
         'Timestamp (ms)': frame_timestamps
     }
 
-    df = pd.DataFrame(data)
-    st.dataframe(df)
+
+def get_excel_link(data, title):
+    b64 = base64.b64encode(data).decode()
+    return f'<a href="data:application/octet-stream;base64,{b64}" download="{title}.xlsx">Download {title}</a>'
+df = pd.DataFrame(data)
+st.dataframe(df)
 
     # Save PSNR values, frame numbers, and timestamps to an Excel file
-    excel_buffer = df.to_excel(index=False)
-    st.markdown(get_excel_link(excel_buffer, "Download PSNR Report"), unsafe_allow_html=True)
+excel_buffer = df.to_excel(index=False)
+st.markdown(get_excel_link(excel_buffer, "Download PSNR Report"), unsafe_allow_html=True)
