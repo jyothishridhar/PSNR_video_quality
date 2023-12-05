@@ -21,12 +21,13 @@ def calculate_psnr(frame1, frame2):
     psnr = 10 * np.log10((max_pixel ** 2) / mse)
     return psnr
 
-def calculate_psnr_for_each_frame(distorted_video_path, good_video_path):
+def calculate_psnr_for_each_frame(distorted_video_path, good_video_path, psnr_threshold):
     # Open the videos
     distorted_video = cv2.VideoCapture(distorted_video_path)
     good_video = cv2.VideoCapture(good_video_path)
 
     psnr_values = []
+    quality_status = []  # 'Good' or 'Distorted' based on PSNR threshold
     distorted_frame_numbers = []
     frame_timestamps = []  # To store the timestamp of each frame
 
@@ -50,8 +51,11 @@ def calculate_psnr_for_each_frame(distorted_video_path, good_video_path):
         psnr_values.append(psnr)
 
         # Check if distortion happens (e.g., PSNR is below a threshold)
-        if psnr < 25.0:
+        if psnr < psnr_threshold:
+            quality_status.append('Distorted')
             distorted_frame_numbers.append(len(psnr_values))
+        else:
+            quality_status.append('Good')
 
         # Get the timestamp of the current frame and append to the list
         current_frame_time = distorted_video.get(cv2.CAP_PROP_POS_MSEC)
@@ -61,7 +65,7 @@ def calculate_psnr_for_each_frame(distorted_video_path, good_video_path):
     distorted_video.release()
     good_video.release()
 
-    return psnr_values, distorted_frame_numbers, frame_timestamps
+    return psnr_values, quality_status, distorted_frame_numbers, frame_timestamps
 
 # Define get_excel_link function
 def get_excel_link(df, title):
@@ -88,10 +92,15 @@ st.markdown(f"[Click here to download the Distorted Video]({distorted_video_url}
 st.markdown(f"**Download Reference Video**")
 st.markdown(f"[Click here to download the Reference Video]({good_video_url})")
 
+# Add PSNR threshold slider
+psnr_threshold = st.slider("Select PSNR Threshold", min_value=0.0, max_value=50.0, value=25.0)
+
 # Add button to run PSNR calculation
 if st.button("Run PSNR Calculation"):
     # Calculate PSNR values for each frame in the distorted video
-    psnr_values, distorted_frame_numbers, frame_timestamps = calculate_psnr_for_each_frame(distorted_video_path, good_video_path)
+    psnr_values, quality_status, distorted_frame_numbers, frame_timestamps = calculate_psnr_for_each_frame(
+        distorted_video_path, good_video_path, psnr_threshold
+    )
 
     # Create a list of frame numbers for x-axis
     frame_numbers = list(range(1, len(psnr_values) + 1))
@@ -102,10 +111,11 @@ if st.button("Run PSNR Calculation"):
     # Display the result on the app
     st.success("PSNR calculation completed!")
 
-    # Display the PSNR values and frame timestamps
+    # Display the PSNR values, quality status, and frame timestamps
     data = {
         'Frame Number': frame_numbers,
         'PSNR Value': psnr_values,
+        'Video Quality Status': quality_status,
         'Timestamp (ms)': frame_timestamps
     }
 
